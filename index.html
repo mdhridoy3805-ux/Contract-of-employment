@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
   <title>Employment Contract · Bangladesh Embassy</title>
-  <!-- html2canvas for PNG download -->
+  <!-- html2canvas for JPG download -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
   </script>
   <style>
@@ -393,6 +393,7 @@
     .action-btn:hover {
       background: #0f2a38;
       transform: translateY(-1px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
     }
     .action-btn.btn-doc {
       background: #2b5797;
@@ -400,11 +401,11 @@
     .action-btn.btn-doc:hover {
       background: #1e3f6f;
     }
-    .action-btn.btn-png {
-      background: #4a154b;
+    .action-btn.btn-jpg {
+      background: #c2410c;
     }
-    .action-btn.btn-png:hover {
-      background: #2d0d2e;
+    .action-btn.btn-jpg:hover {
+      background: #9a3412;
     }
 
     .note-text {
@@ -543,7 +544,7 @@
 
     <div class="page-marker">Page 1</div>
 
-    <!-- Buttons: Print PDF, Download DOC, Download PNG -->
+    <!-- Buttons: Print PDF, Download DOC, Download JPG -->
     <div class="btn-print no-print">
       <div class="btn-group">
         <button class="action-btn" onclick="window.print()" title="Print as PDF or Save as PDF">
@@ -552,25 +553,22 @@
         <button class="action-btn btn-doc" onclick="downloadAsDOC()" title="Download as Word Document">
           📄 Download DOC
         </button>
-        <button class="action-btn btn-png" onclick="downloadAsPNG()" title="Download as PNG Image">
-          🖼️ Download PNG
+        <button class="action-btn btn-jpg" onclick="downloadAsJPG()" title="Download as JPG Image (High Quality)">
+          🖼️ Download JPG
         </button>
       </div>
-      <p class="note-text">সব ঘর পূরণ করে প্রিন্ট বা ডাউনলোড করুন (A4 সাইজ, এক পেজ) | খালি ঘর প্রিন্টে ব্ল্যাংক থাকবে</p>
+      <p class="note-text">সব ঘর পূরণ করে প্রিন্ট বা ডাউনলোড করুন (A4 সাইজ, এক পেজ) | খালি ঘর প্রিন্টে ব্ল্যাংক থাকবে | JPG হাই কোয়ালিটি</p>
     </div>
   </div>
 
   <script>
     // Download as DOC function
     function downloadAsDOC() {
-      // Get the contract container HTML
       const contractHTML = document.getElementById('contractForm').cloneNode(true);
       
-      // Remove buttons from clone
       const btns = contractHTML.querySelector('.btn-print');
       if (btns) btns.remove();
       
-      // Build the full HTML document
       const fullHTML = `
         <!DOCTYPE html>
         <html>
@@ -596,7 +594,6 @@
         </html>
       `;
       
-      // Create blob and download
       const blob = new Blob([fullHTML], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -608,8 +605,8 @@
       URL.revokeObjectURL(url);
     }
 
-    // Download as PNG function
-    function downloadAsPNG() {
+    // Download as JPG function (High Quality)
+    function downloadAsJPG() {
       const contractElement = document.getElementById('contractForm');
       
       // Temporarily hide buttons
@@ -617,25 +614,29 @@
       if (btnPrint) btnPrint.style.display = 'none';
       
       html2canvas(contractElement, {
-        scale: 2,
+        scale: 3, // উচ্চ স্কেল (3x) = হাই কোয়ালিটি
         useCORS: true,
         backgroundColor: '#ffffff',
         windowWidth: contractElement.scrollWidth,
-        windowHeight: contractElement.scrollHeight
+        windowHeight: contractElement.scrollHeight,
+        logging: false
       }).then(canvas => {
         // Show buttons again
         if (btnPrint) btnPrint.style.display = '';
         
+        // JPG তে কনভার্ট - quality 0.98 (সর্বোচ্চ কোয়ালিটি)
+        const jpgDataUrl = canvas.toDataURL('image/jpeg', 0.98);
+        
         // Create download link
         const link = document.createElement('a');
-        link.download = 'Employment_Contract_Bangladesh_Embassy.png';
-        link.href = canvas.toDataURL('image/png');
+        link.download = 'Employment_Contract_Bangladesh_Embassy.jpg';
+        link.href = jpgDataUrl;
         link.click();
       }).catch(error => {
         // Show buttons again in case of error
         if (btnPrint) btnPrint.style.display = '';
-        console.error('PNG generation error:', error);
-        alert('PNG download failed. Please try again.');
+        console.error('JPG generation error:', error);
+        alert('JPG ডাউনলোড ব্যর্থ হয়েছে। আবার চেষ্টা করুন।');
       });
     }
   </script>
