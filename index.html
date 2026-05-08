@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
   <title>Employment Contract · Bangladesh Embassy</title>
+  <!-- html2canvas for PNG download -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+  </script>
   <style>
     * {
       margin: 0;
@@ -121,10 +124,13 @@
       .btn-print {
         margin-top: 8px;
       }
-      .print-btn {
-        width: 100%;
-        padding: 10px;
-        font-size: 13px;
+      .btn-group {
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .action-btn {
+        padding: 8px 14px;
+        font-size: 12px;
       }
       .page-marker {
         font-size: 8px;
@@ -149,6 +155,12 @@
       input {
         font-size: 8px;
       }
+      .btn-group {
+        flex-direction: column;
+      }
+      .action-btn {
+        width: 100%;
+      }
     }
 
     /* Print styles - A4 size */
@@ -168,14 +180,27 @@
         font-size: 9px;
         line-height: 1.25;
       }
+      /* প্রিন্টের সময় ইনপুট ফিল্ড ব্ল্যাঙ্ক দেখাবে */
       input,
       .input-field {
-        border: 1px solid #999;
-        box-shadow: none;
-        background: white;
-        color: #000;
+        border: 1px solid transparent !important;
+        border-bottom: 1px solid #ccc !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        color: transparent !important;
+        caret-color: transparent !important;
         font-size: 9px;
         padding: 1.5px 3px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      /* placeholder hide */
+      input::placeholder {
+        color: transparent !important;
+        opacity: 0 !important;
+      }
+      input:focus {
+        outline: none !important;
       }
       .no-print {
         display: none;
@@ -292,11 +317,16 @@
       max-width: 180px;
       transition: 0.2s;
       border-radius: 1px;
+      color: #000;
     }
     input:focus {
       outline: 1.5px solid #1e4b6e;
       background: #fffbe6;
       border-bottom: 1px solid #1e4b6e;
+    }
+    input::placeholder {
+      color: #999;
+      font-style: italic;
     }
 
     .dual-lang-note {
@@ -332,36 +362,55 @@
       font-size: 9px;
     }
 
+    /* Button group */
     .btn-print {
-      margin-top: 10px;
+      margin-top: 12px;
       text-align: center;
     }
-    .print-btn {
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .action-btn {
       background: #1e3b4f;
       color: white;
       border: none;
-      padding: 8px 22px;
-      font-size: 12px;
+      padding: 10px 20px;
+      font-size: 13px;
       font-weight: bold;
-      border-radius: 20px;
+      border-radius: 25px;
       cursor: pointer;
       letter-spacing: 0.5px;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
       transition: 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .print-btn:hover {
+    .action-btn:hover {
       background: #0f2a38;
+      transform: translateY(-1px);
     }
-
-    hr {
-      margin: 4px 0 3px;
-      border: 0.3px solid #ccc;
+    .action-btn.btn-doc {
+      background: #2b5797;
+    }
+    .action-btn.btn-doc:hover {
+      background: #1e3f6f;
+    }
+    .action-btn.btn-png {
+      background: #4a154b;
+    }
+    .action-btn.btn-png:hover {
+      background: #2d0d2e;
     }
 
     .note-text {
       font-size: 8px;
       color: #444;
-      margin-top: 2px;
+      margin-top: 4px;
     }
 
     .contract-intro {
@@ -494,11 +543,101 @@
 
     <div class="page-marker">Page 1</div>
 
-    <!-- Print & Download Button -->
+    <!-- Buttons: Print PDF, Download DOC, Download PNG -->
     <div class="btn-print no-print">
-      <button class="print-btn" onclick="window.print()">🖨️ Print / Download as PDF</button>
-      <p class="note-text">সব ঘর পূরণ করে প্রিন্ট বা PDF ডাউনলোড করুন (A4 সাইজ, এক পেজ)</p>
+      <div class="btn-group">
+        <button class="action-btn" onclick="window.print()" title="Print as PDF or Save as PDF">
+          🖨️ Print / PDF
+        </button>
+        <button class="action-btn btn-doc" onclick="downloadAsDOC()" title="Download as Word Document">
+          📄 Download DOC
+        </button>
+        <button class="action-btn btn-png" onclick="downloadAsPNG()" title="Download as PNG Image">
+          🖼️ Download PNG
+        </button>
+      </div>
+      <p class="note-text">সব ঘর পূরণ করে প্রিন্ট বা ডাউনলোড করুন (A4 সাইজ, এক পেজ) | খালি ঘর প্রিন্টে ব্ল্যাংক থাকবে</p>
     </div>
   </div>
+
+  <script>
+    // Download as DOC function
+    function downloadAsDOC() {
+      // Get the contract container HTML
+      const contractHTML = document.getElementById('contractForm').cloneNode(true);
+      
+      // Remove buttons from clone
+      const btns = contractHTML.querySelector('.btn-print');
+      if (btns) btns.remove();
+      
+      // Build the full HTML document
+      const fullHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Employment Contract - Bangladesh Embassy</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 10px; line-height: 1.3; margin: 0; padding: 20px; }
+            input, .input-field { border: 1px solid #ccc; border-bottom: 1px solid #999; background: #fff; padding: 2px 4px; font-size: 9px; }
+            .section-title { font-weight: bold; font-size: 11px; margin: 6px 0 2px; text-transform: uppercase; border-bottom: 1px solid #222; }
+            .two-col { display: flex; flex-wrap: wrap; gap: 6px; }
+            .col { flex: 1 1 48%; min-width: 160px; }
+            .row { display: flex; flex-wrap: wrap; margin-bottom: 1.5px; }
+            .label { font-weight: 600; min-width: 105px; font-size: 9px; }
+            .visa-table { display: flex; flex-wrap: wrap; border: 1px solid black; margin-bottom: 8px; font-size: 9px; }
+            .visa-item { flex: 1 1 20%; border: 1px solid black; padding: 2px 4px; }
+            @page { size: A4; margin: 10mm; }
+          </style>
+        </head>
+        <body>
+          ${contractHTML.outerHTML}
+        </body>
+        </html>
+      `;
+      
+      // Create blob and download
+      const blob = new Blob([fullHTML], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'Employment_Contract_Bangladesh_Embassy.doc';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // Download as PNG function
+    function downloadAsPNG() {
+      const contractElement = document.getElementById('contractForm');
+      
+      // Temporarily hide buttons
+      const btnPrint = contractElement.querySelector('.btn-print');
+      if (btnPrint) btnPrint.style.display = 'none';
+      
+      html2canvas(contractElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: contractElement.scrollWidth,
+        windowHeight: contractElement.scrollHeight
+      }).then(canvas => {
+        // Show buttons again
+        if (btnPrint) btnPrint.style.display = '';
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = 'Employment_Contract_Bangladesh_Embassy.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      }).catch(error => {
+        // Show buttons again in case of error
+        if (btnPrint) btnPrint.style.display = '';
+        console.error('PNG generation error:', error);
+        alert('PNG download failed. Please try again.');
+      });
+    }
+  </script>
 </body>
 </html>
